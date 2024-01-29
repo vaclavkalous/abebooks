@@ -18,7 +18,9 @@ Create Python virtual environment and install necessary packages::
     source ./venv/bin/activate
     pip3 install -r requirements.txt
 
+
 Set up environment variables::
+    
     export HTTP_PROXY_LIST = [...]
 
 Downloading the data
