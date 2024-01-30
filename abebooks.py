@@ -59,7 +59,7 @@ def extract_isbns_from_url(
             next_page_url = next_page_element[0]
             extract_isbns_from_url(urljoin(START_URL, next_page_url), n_items, isbns)
         else:
-            logger.warning("Could not find next_page_url at %s", response.url)
+            logger.warning("Could not find next page URL at %s", response.url)
 
     return isbns[:n_items]
 
@@ -72,7 +72,9 @@ def fetch_url_response(
     url = urljoin(START_URL, path) if next_page_url else ISBN_SEARCH_URL.format(path)
 
     while retry_count <= max_retries:
-        proxy_url = random.choice(PROXY_LIST)
+        proxy = random.choice(PROXY_LIST)
+
+        logger.info("Using proxy %s for URL %s", proxy, url)
 
         response = requests.get(
             url,
@@ -81,8 +83,8 @@ def fetch_url_response(
                 "Referer": REFERER,
             },
             proxies={
-                "http": proxy_url,
-                "https": proxy_url,
+                "http": proxy,
+                "https": proxy,
             },
         )
         if response.status_code == 429:
@@ -193,9 +195,9 @@ def main():
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             books = list(executor.map(extract_books_from_url, bookbot_isbns))
 
-        data = [offer for isbn in books for offer in isbn]
+        offers = [offer for isbn in books for offer in isbn]
 
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(offers)
 
         part_1_solution = get_sellers_per_title(df)
         part_1_solution.to_csv(SOLUTION_OUTPUT_FILE, index=False)
